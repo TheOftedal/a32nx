@@ -1,38 +1,15 @@
-import React from 'react';
+import React, { FC, useMemo, useState } from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
 import { Navbar } from '../Components/Navbar';
 import { FuelPage } from './Pages/FuelPage';
+import { AircraftInfo, DispatchFuels, DispatchWeights } from './types';
 
-type DispatchProps = {
+export type DispatchProps = {
     loadsheet: string,
-    weights: {
-        cargo: number,
-        estLandingWeight: number,
-        estTakeOffWeight: number,
-        estZeroFuelWeight: number,
-        maxLandingWeight: number,
-        maxTakeOffWeight: number,
-        maxZeroFuelWeight: number,
-        passengerCount: number,
-        passengerWeight: number,
-        payload: number,
-    },
-    fuels: {
-        avgFuelFlow: number,
-        contingency: number,
-        enrouteBurn: number,
-        etops: number,
-        extra: number,
-        maxTanks: number,
-        minTakeOff: number,
-        planLanding: number,
-        planRamp: number,
-        planTakeOff: number,
-        reserve: number,
-        taxi: number,
-    },
+    weights: DispatchWeights,
+    fuels: DispatchFuels,
     units: string,
     arrivingAirport: string,
     arrivingIata: string,
@@ -45,34 +22,32 @@ type DispatchProps = {
     contFuelTime: number,
     resFuelTime: number,
     taxiOutTime: number,
+}
+
+// Replace with state
+const aircraftInfo: AircraftInfo = {
+    model: '320-251N [A20N]',
+    range: 3400,
+    mrw: 79400,
+    mzfw: 64300,
+    maxPax: 180,
+    engines: 'CFM LEAP 1A-26',
+    mmo: 0.82,
+    mtow: 79000,
+    maxFuelCapacity: 23721,
+    maxCargo: 9435,
 };
 
-type DispatchState = {
-    activeIndex: number,
-};
+const Dispatch:FC<DispatchProps> = (props) => {
+    const [activePage, setActivePage] = useState<number>(0);
 
-class Dispatch extends React.Component<DispatchProps, DispatchState> {
-    tabs = [
-        'Overview',
-        'OFP',
-        'Fuel',
-    ];
+    const pages = ['Overview', 'OFP', 'Fuel'];
 
-    constructor(props: DispatchProps) {
-        super(props);
-        this.handleClick = this.handleClick.bind(this);
-        this.state = { activeIndex: 0 };
-    }
-
-    handleClick(index: number) {
-        this.setState({ activeIndex: index });
-    }
-
-    currentPage() {
-        switch (this.state.activeIndex) {
+    const currentPage = useMemo(() => {
+        switch (activePage) {
         case 1:
             return (
-                <LoadsheetPage loadsheet={this.props.loadsheet} />
+                <LoadsheetPage loadsheet={props.loadsheet} />
             );
         case 2:
             return (
@@ -87,36 +62,21 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
         default:
             return (
                 <OverviewPage
-                    weights={this.props.weights}
-                    fuels={this.props.fuels}
-                    units={this.props.units}
-                    arrivingAirport={this.props.arrivingAirport}
-                    arrivingIata={this.props.arrivingIata}
-                    departingAirport={this.props.departingAirport}
-                    departingIata={this.props.departingIata}
-                    altBurn={this.props.altBurn}
-                    altIcao={this.props.altIcao}
-                    altIata={this.props.altIata}
-                    tripTime={this.props.tripTime}
-                    contFuelTime={this.props.contFuelTime}
-                    resFuelTime={this.props.resFuelTime}
-                    taxiOutTime={this.props.taxiOutTime}
+                    aircraftInfo={aircraftInfo}
                 />
             );
         }
-    }
+    }, [activePage]);
 
-    render() {
-        return (
-            <div className="w-full">
-                <h1 className="text-3xl pt-6 text-white">Dispatch</h1>
-                <Navbar tabs={this.tabs} onSelected={(index) => this.handleClick(index)} />
-                <div>
-                    {this.currentPage()}
-                </div>
+    return (
+        <div className="w-full">
+            <h1 className="text-3xl pt-6 text-white">Dispatch</h1>
+            <Navbar tabs={pages} onSelected={(page) => setActivePage(page)} />
+            <div>
+                {currentPage}
             </div>
-        );
-    }
-}
+        </div>
+    );
+};
 
 export default Dispatch;
