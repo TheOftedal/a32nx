@@ -12,6 +12,7 @@ const tailwindcss = require('tailwindcss');
 const copy = require('rollup-plugin-copy');
 const serve = require('rollup-plugin-serve');
 const livereload = require('rollup-plugin-livereload');
+const json = require('rollup-plugin-json');
 
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 
@@ -20,7 +21,7 @@ module.exports = {
     plugins: [
         image(),
         dotenv.config({ path: '../../../../.env' }),
-        nodeResolve({ extensions }),
+        nodeResolve({ extensions, browser: true }),
         commonjs({ include: /node_modules/ }),
         babel({
             presets: [
@@ -55,6 +56,7 @@ module.exports = {
         }),
         serve(),
         livereload('web'),
+        json(),
     ],
     output: {
         file: `${__dirname}/web/bundle.js`,

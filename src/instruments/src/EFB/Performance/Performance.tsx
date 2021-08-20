@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { map } from 'lodash';
 
 import { Navbar } from '../Components/Navbar';
 import TODCalculator from '../TODCalculator/TODCalculator';
 import LandingWidget from './Widgets/LandingWidget';
+import { GlobalContext } from '../Store/global-context';
+import { PerformanceActions } from '../Store/performance-reducer';
 
 const tabs = [
     { name: 'Top of Descent', renderComponent: () => <TODCalculator /> },
@@ -11,14 +13,23 @@ const tabs = [
 ];
 
 const Performance = () => {
-    const [activeIndex, setActiveIndex] = useState(0);
+    const { performanceState, performanceDispatch } = useContext(GlobalContext);
 
     return (
         <div className="w-full">
             <h1 className="text-3xl pt-6 text-white">Performance</h1>
-            <Navbar tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
+            <Navbar
+                activeIndex={performanceState.currentView}
+                tabs={map(tabs, 'name')}
+                onSelected={(activeIndex) => {
+                    performanceDispatch({
+                        type: PerformanceActions.SET_CURRENT_VIEW,
+                        payload: { currentView: activeIndex },
+                    });
+                }}
+            />
             <div className="mt-6">
-                {tabs[activeIndex].renderComponent()}
+                {tabs[performanceState.currentView].renderComponent()}
             </div>
         </div>
     );

@@ -8,7 +8,7 @@ import {
     SET_TUG_REQUEST_ONLY,
 } from '../actions';
 
-type ButtonSelectionState = {
+export type ButtonSelectionState = {
     activeButtons: any[];
     disabledButtons: string[];
     tugRequestOnly: boolean,

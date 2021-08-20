@@ -2,6 +2,7 @@ import fs from 'fs';
 import { join } from 'path';
 import image from '@rollup/plugin-image';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import json from '@rollup/plugin-json';
 import commonjs from '@rollup/plugin-commonjs';
 import { babel as babelPlugin } from '@rollup/plugin-babel';
 import { typescriptPaths } from 'rollup-plugin-typescript-paths';
@@ -58,7 +59,11 @@ function postCss(_, instrumentFolder) {
 export function baseCompile(instrumentName, instrumentFolder) {
     return [
         image(),
-        nodeResolve({ extensions }),
+        nodeResolve({
+            extensions,
+            browser: true,
+            mainFields: ['module', 'jsnext', 'jsnext:main', 'browser', 'main'] }),
+        json(),
         commonjs({ include: /node_modules/ }),
         babel(),
         typescriptPaths({

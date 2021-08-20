@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
 import { Navbar } from '../Components/Navbar';
 import { FuelPage } from './Pages/FuelPage';
+import { GlobalContext } from '../Store/global-context';
+import { DispatchActions } from '../Store/dispatch-reducer';
 
 type DispatchProps = {
     loadsheet: string,
@@ -47,32 +49,27 @@ type DispatchProps = {
     taxiOutTime: number,
 };
 
-type DispatchState = {
-    activeIndex: number,
-};
+const Dispatch: React.FC<DispatchProps> = (props) => {
+    const { dispatchState, dispatchDispatch } = useContext(GlobalContext);
 
-class Dispatch extends React.Component<DispatchProps, DispatchState> {
-    tabs = [
+    const tabs = [
         'Overview',
         'OFP',
         'Fuel',
     ];
 
-    constructor(props: DispatchProps) {
-        super(props);
-        this.handleClick = this.handleClick.bind(this);
-        this.state = { activeIndex: 0 };
-    }
+    const handleClick = (index: number) => {
+        dispatchDispatch({
+            type: DispatchActions.SET_CURRENT_VIEW,
+            payload: { currentView: index },
+        });
+    };
 
-    handleClick(index: number) {
-        this.setState({ activeIndex: index });
-    }
-
-    currentPage() {
-        switch (this.state.activeIndex) {
+    const currentPage = () => {
+        switch (dispatchState.currentView) {
         case 1:
             return (
-                <LoadsheetPage loadsheet={this.props.loadsheet} />
+                <LoadsheetPage loadsheet={props.loadsheet} />
             );
         case 2:
             return (
@@ -87,36 +84,34 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
         default:
             return (
                 <OverviewPage
-                    weights={this.props.weights}
-                    fuels={this.props.fuels}
-                    units={this.props.units}
-                    arrivingAirport={this.props.arrivingAirport}
-                    arrivingIata={this.props.arrivingIata}
-                    departingAirport={this.props.departingAirport}
-                    departingIata={this.props.departingIata}
-                    altBurn={this.props.altBurn}
-                    altIcao={this.props.altIcao}
-                    altIata={this.props.altIata}
-                    tripTime={this.props.tripTime}
-                    contFuelTime={this.props.contFuelTime}
-                    resFuelTime={this.props.resFuelTime}
-                    taxiOutTime={this.props.taxiOutTime}
+                    weights={props.weights}
+                    fuels={props.fuels}
+                    units={props.units}
+                    arrivingAirport={props.arrivingAirport}
+                    arrivingIata={props.arrivingIata}
+                    departingAirport={props.departingAirport}
+                    departingIata={props.departingIata}
+                    altBurn={props.altBurn}
+                    altIcao={props.altIcao}
+                    altIata={props.altIata}
+                    tripTime={props.tripTime}
+                    contFuelTime={props.contFuelTime}
+                    resFuelTime={props.resFuelTime}
+                    taxiOutTime={props.taxiOutTime}
                 />
             );
         }
-    }
+    };
 
-    render() {
-        return (
-            <div className="w-full">
-                <h1 className="text-3xl pt-6 text-white">Dispatch</h1>
-                <Navbar tabs={this.tabs} onSelected={(index) => this.handleClick(index)} />
-                <div>
-                    {this.currentPage()}
-                </div>
+    return (
+        <div className="w-full">
+            <h1 className="text-3xl pt-6 text-white">Dispatch</h1>
+            <Navbar activeIndex={dispatchState.currentView} tabs={tabs} onSelected={(index) => handleClick(index)} />
+            <div>
+                {currentPage()}
             </div>
-        );
-    }
-}
+        </div>
+    );
+};
 
 export default Dispatch;

@@ -26,14 +26,15 @@ import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import { useSimVar } from '../../../Common/simVars';
 import { MetarParserType } from '../../../Common/metarTypes';
-import { EPerformanceActions, PerformanceContext, performanceInitialState } from '../../Store/performance-context';
+import { PerformanceActions, performanceInitialState } from '../../Store/performance-reducer';
+import { GlobalContext } from '../../Store/global-context';
 
 const poundsToKgs = 0.453592;
 
 export const LandingWidget = () => {
     const calculator: LandingCalculator = new LandingCalculator();
 
-    const { performanceState, performanceDispatch } = useContext(PerformanceContext);
+    const { performanceState, performanceDispatch } = useContext(GlobalContext);
 
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
 
@@ -80,7 +81,7 @@ export const LandingWidget = () => {
         );
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: {
                 maxAutobrakeLandingDist: Math.round(landingDistances.maxAutobrakeDist),
                 mediumAutobrakeLandingDist: Math.round(landingDistances.mediumAutobrakeDist),
@@ -116,7 +117,7 @@ export const LandingWidget = () => {
         const weightKgs = Math.round(totalWeight * poundsToKgs);
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: {
                 weight: weightKgs,
                 windDirection: parsedMetar.wind.degrees,
@@ -131,7 +132,7 @@ export const LandingWidget = () => {
 
     const handleICAOChange = (icao: string): void => {
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { icao },
 
         });
@@ -145,7 +146,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { windDirection },
         });
     };
@@ -158,7 +159,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { magnitude },
         });
     };
@@ -171,7 +172,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { weight },
         });
     };
@@ -184,7 +185,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { runwayHeading },
         });
     };
@@ -197,7 +198,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { approachSpeed },
         });
     };
@@ -210,7 +211,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { altitude },
         });
     };
@@ -223,7 +224,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { temperature },
         });
     };
@@ -236,7 +237,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { flaps },
         });
     };
@@ -249,7 +250,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { runwayCondition },
         });
     };
@@ -258,7 +259,7 @@ export const LandingWidget = () => {
         const reverseThrust: boolean = newValue;
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { reverseThrust },
         });
     };
@@ -271,7 +272,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { slope },
         });
     };
@@ -284,7 +285,7 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { runwayLength },
         });
     };
@@ -293,7 +294,7 @@ export const LandingWidget = () => {
         const overweightProcedure: boolean = newValue;
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { overweightProcedure },
         });
     };
@@ -306,14 +307,14 @@ export const LandingWidget = () => {
         }
 
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { pressure },
         });
     };
 
     const clearInputs = (): void => {
         performanceDispatch({
-            type: EPerformanceActions.SET_LANDING,
+            type: PerformanceActions.SET_LANDING,
             payload: { ...performanceInitialState },
         });
     };
@@ -517,8 +518,8 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={syncValues}
-                                className={`mx-2 w-1/4 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg
-                                focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
+                                className={`mx-2 w-1/4 text-white bg-teal-light p-2 flex items-center justify-center 
+                                rounded-lg focus:outline-none text-lg ${isValidIcao() ? '' : 'opacity-50'}`}
                                 type="button"
                                 disabled={!isValidIcao()}
                             >

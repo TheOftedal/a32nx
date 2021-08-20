@@ -9,7 +9,7 @@ import {
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType.enum';
 import { TOD_INPUT_MODE } from '../../Enum/TODInputMode.enum';
 
-type TodCalculatorState = {
+export type TodCalculatorState = {
     groundSpeed: {from: number, groundSpeed?: number}[],
     groundSpeedMode: TOD_INPUT_MODE,
     currentAltitudeMode: TOD_INPUT_MODE,
