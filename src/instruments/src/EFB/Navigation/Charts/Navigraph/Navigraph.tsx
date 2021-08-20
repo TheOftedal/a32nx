@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-// import { useNavigraphApi } from '../../../api/navigation/navigraph';
+import { useNavigraphApi } from '../../../api/navigation/navigraph';
 import { SimbriefData } from '../../../Efb';
 import NavigraphAuth from './NavigraphAuth';
 import NavigraphCharts from './NavigraphCharts';
@@ -9,9 +9,9 @@ export type NavigraphProps = {
 }
 
 export const Navigraph: FC<NavigraphProps> = ({ simBriefData }) => {
-    // const { isAuthenticated } = useNavigraphApi();
+    const { isAuthenticated } = useNavigraphApi();
 
-    if (true) {
+    if (!isAuthenticated) {
         return <NavigraphAuth />;
     }
 

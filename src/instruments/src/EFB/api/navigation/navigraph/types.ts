@@ -206,6 +206,7 @@ export type NavigraphTokenResult = {
 export enum NavigraphTokenStatus {
     Success,
     SlowDown,
+    AccessDenied,
     IsPending,
     IsExpired,
     InvalidClient,

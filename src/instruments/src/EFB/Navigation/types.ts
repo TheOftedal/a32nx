@@ -15,6 +15,7 @@ export enum NavigationActionType {
     AddFavChartId,
     RemoveFavChartId,
     SetShowPosOnChart,
+    SetNavigraphAccessToken,
 }
 
 export type NavigationAction = {

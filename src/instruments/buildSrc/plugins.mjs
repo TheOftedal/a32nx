@@ -61,8 +61,8 @@ export function baseCompile(instrumentName, instrumentFolder) {
         image(),
         nodeResolve({
             extensions,
-            browser: true,
-            mainFields: ['module', 'jsnext', 'jsnext:main', 'browser', 'main'] }),
+            mainFields: ['module', 'jsnext', 'jsnext:main', 'browser', 'main'],
+        }),
         json(),
         commonjs({ include: /node_modules/ }),
         babel(),

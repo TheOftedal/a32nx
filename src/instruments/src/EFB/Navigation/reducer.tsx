@@ -1,7 +1,7 @@
 import React, { createContext, Dispatch, FC, memo, useContext, useReducer } from 'react';
 import { NXDataStore } from '@shared/persistence';
 import { NavigraphChart } from '../api/navigation/navigraph';
-import { ChartFoxChart } from '../api/navigation/chart-fox';
+// import { ChartFoxChart } from '../api/navigation/chart-fox';
 import { AirportInfo, Chart } from '../api/navigation/types';
 import { ChartSource, NavigationAction, NavigationActionType, NavPersistentProp } from './types';
 
@@ -15,7 +15,7 @@ export type NavigationState = {
     airportSearchValue: string;
     selectedChartTab: string;
     navigraphCharts: Array<NavigraphChart>;
-    chartFoxCharts: Array<ChartFoxChart>;
+    // chartFoxCharts: Array<ChartFoxChart>;
     selectedChart?: Chart;
     favICAOs: Array<string>;
     favChartIds: Array<string>;
@@ -30,10 +30,9 @@ export const getNavigationInitialState = (): NavigationState => {
     const showPosOnChart = NXDataStore.get<number>(NavPersistentProp.ShowPosOnChart) === 1;
 
     return {
-
         selectedChartTab: favChartIds.length > 0 ? 'FAV' : 'SID',
         navigraphCharts: [],
-        chartFoxCharts: [],
+        // chartFoxCharts: [],
         airportSearchResults: [],
         simBriefAirports: [],
         favoriteAirports: [],
@@ -94,12 +93,12 @@ const NavigationReducer = (state: NavigationState, action: NavigationAction): Na
             navigraphCharts: action.payload,
         };
     }
-    case NavigationActionType.SetChartFoxCharts: {
-        return {
-            ...state,
-            chartFoxCharts: action.payload,
-        };
-    }
+    // case NavigationActionType.SetChartFoxCharts: {
+    //     return {
+    //         ...state,
+    //         chartFoxCharts: action.payload,
+    //     };
+    // }
     case NavigationActionType.SetSelectedChart: {
         return {
             ...state,

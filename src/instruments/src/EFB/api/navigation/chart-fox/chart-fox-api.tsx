@@ -12,6 +12,10 @@ export type ChartFoxAirportCharts = {
     reference: ChartFoxChart[],
 }
 
+export default class ChartFoxApi {
+
+}
+
 // export default class ChartFoxClient {
 //     private static token = process.env.CHARTFOX_SECRET;
 

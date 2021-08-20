@@ -1,11 +1,8 @@
-import { Jwt } from './types';
+import { JwtPayload } from './types';
 
-const b64DecodeUnicode = (str: string) => decodeURIComponent(
-    Array.prototype.map.call(Buffer.from(str, 'base64'), (c: string) => `%${(`00${c.charCodeAt(0).toString(16)}`).slice(-2)}`).join(''),
-);
-
-export const parseJwt = (token: string): Jwt => JSON.parse(
-    b64DecodeUnicode(
-        token.split('.')[1].replace('-', '+').replace('_', '/'),
-    ),
-);
+export const parseJwtPayload = (token: string): JwtPayload => {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => `%${(`00${c.charCodeAt(0).toString(16)}`).slice(-2)}`).join(''));
+    return JSON.parse(jsonPayload);
+};

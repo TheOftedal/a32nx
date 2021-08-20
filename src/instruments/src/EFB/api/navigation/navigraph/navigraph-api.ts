@@ -1,16 +1,11 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
-import { camelizeKeys, decamelize } from 'humps';
+import { camelizeKeys } from 'humps';
 import {
-    NavigraphDeviceAuth, NavigraphDeviceAuthRequest, NavigraphFMSResult, NavigraphChart, NavigraphChartList,
-    NavigraphPKCE, NavigraphTokenRequest, NavigraphUserInfo, NavigraphSubscription, NavigraphGeoResult,
-    NavigraphAirportInfoDetailed, NavigraphError, NavigraphTokenResult, NavigraphTokenStatus,
+    NavigraphDeviceAuth, NavigraphFMSResult, NavigraphChart, NavigraphChartList,
+    NavigraphPKCE, NavigraphUserInfo, NavigraphSubscription, NavigraphGeoResult,
+    NavigraphAirportInfoDetailed, NavigraphError, NavigraphTokenResult, NavigraphTokenStatus, NavigraphToken,
 } from './types';
 import { icaoFormat } from '../utils';
-
-// TODO: Fix typing
-function formatFormBody<T>(body: T): string {
-    return Object.keys(body).map((key) => ''.concat(encodeURIComponent(decamelize(key)), '=').concat(encodeURIComponent(body[key]))).join('&');
-}
 
 export default class NavigraphApi {
     private client: AxiosInstance;
@@ -19,43 +14,37 @@ export default class NavigraphApi {
 
     private clientSecret: string | undefined;
 
-    constructor() {
-        this.client = axios.create({ transformRequest: (data) => camelizeKeys(data) });
-        this.clientId = process?.env?.CLIENT_ID;
-        this.clientSecret = process?.env?.CLIENT_SECRET;
-    }
+    private accessToken: string | null;
 
-    private setRequestInterceptor(accessToken: string | null) {
+    constructor() {
+        this.clientId = process.env.CLIENT_ID;
+        this.clientSecret = process.env.CLIENT_SECRET;
+
+        this.client = axios.create({ transformResponse: (data) => camelizeKeys(JSON.parse(data)) });
+
         this.client.interceptors.request.use((config: AxiosRequestConfig): AxiosRequestConfig => {
-            if (accessToken) {
-                config.headers.Authorization = accessToken ? `Bearer ${accessToken}` : undefined;
-            }
+            config.headers.Authorization = this.accessToken ? `Bearer ${this.accessToken}` : undefined;
             return config;
         });
     }
 
-    public isValidEnv() {
-        return !(this.clientSecret === undefined || this.clientId === undefined);
-    }
-
     public setAccessToken(accessToken: string | null) {
-        this.setRequestInterceptor(accessToken);
+        this.accessToken = accessToken;
     }
 
     public async authenticateDeviceAsync(pkce: NavigraphPKCE): Promise<NavigraphDeviceAuth | null> {
-        if (!this.isValidEnv()) {
+        if (!this.clientId || !this.clientSecret) {
             return null;
         }
 
-        const request: NavigraphDeviceAuthRequest = {
-            clientId: this.clientId,
-            clientSecret: this.clientSecret,
-            codeChallenge: pkce.code_challenge,
-            codeChallengeMethod: 'S256',
-        };
+        const request = new URLSearchParams();
+        request.append('client_id', this.clientId);
+        request.append('client_secret', this.clientSecret);
+        request.append('code_challenge', pkce.code_challenge);
+        request.append('code_challenge_method', 'S256');
 
         return this.client.post<NavigraphDeviceAuth>(
-            'https://identity.api.navigraph.com/connect/deviceauthorization', formatFormBody(request),
+            'https://identity.api.navigraph.com/connect/deviceauthorization', request,
             { headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' } },
         ).then((value) => value.data)
             .catch((error: AxiosError) => {
@@ -65,59 +54,53 @@ export default class NavigraphApi {
     }
 
     public async refreshTokenAsync(refreshToken: string): Promise<NavigraphTokenResult> {
-        if (!this.isValidEnv()) {
-            return null;
+        if (!this.clientId || !this.clientSecret) {
+            return { status: NavigraphTokenStatus.InvalidEnv };
         }
 
-        const request: NavigraphTokenRequest = {
-            grantType: 'refresh_token',
-            clientId: this.clientId,
-            clientSecret: this.clientSecret,
-            refreshToken,
-        };
+        const request = new URLSearchParams();
+        request.append('grant_type', 'refresh_token');
+        request.append('client_id', this.clientId);
+        request.append('client_secret', this.clientSecret);
+        request.append('refresh_token', refreshToken);
 
         return this.fetchTokenAsync(request);
     }
 
     public async getTokenAsync(deviceCode: string, pkce: NavigraphPKCE): Promise<NavigraphTokenResult> {
-        if (!this.isValidEnv()) {
+        if (!this.clientId || !this.clientSecret) {
             return { status: NavigraphTokenStatus.InvalidEnv };
         }
 
-        const request: NavigraphTokenRequest = {
-            grantType: 'urn:ietf:params:oauth:grant-type:device_code',
-            clientId: this.clientId,
-            clientSecret: this.clientSecret,
-            scope: 'openid charts offline_access',
-            codeVerifier: pkce.code_verifier,
-            deviceCode,
-        };
+        const request = new URLSearchParams();
+        request.append('grant_type', 'urn:ietf:params:oauth:grant-type:device_code');
+        request.append('client_id', this.clientId);
+        request.append('client_secret', this.clientSecret);
+        request.append('scope', 'openid charts offline_access');
+        request.append('code_verifier', pkce.code_verifier);
+        request.append('device_code', deviceCode);
 
         return this.fetchTokenAsync(request);
     }
 
-    private async fetchTokenAsync(request: NavigraphTokenRequest): Promise<NavigraphTokenResult> {
-        return this.client.post<NavigraphTokenRequest, NavigraphTokenResult>(
-            'https://identity.api.navigraph.com/connect/token', formatFormBody(request),
+    private async fetchTokenAsync(request: URLSearchParams): Promise<NavigraphTokenResult> {
+        return this.client.post<NavigraphToken>(
+            'https://identity.api.navigraph.com/connect/token', request,
             { headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' } },
-        ).then((value) => value)
+        ).then((result) => ({
+            status: NavigraphTokenStatus.Success,
+            token: result.data,
+        }))
             .catch((error: AxiosError<NavigraphError>) => {
-                if (error.response?.data) {
-                    switch (error.response?.data.error) {
-                    case 'invalid_client': return { status: NavigraphTokenStatus.InvalidClient };
-                    case 'invalid_request': return { status: NavigraphTokenStatus.InvalidRequest };
-                    case 'slow_down': return { status: NavigraphTokenStatus.SlowDown };
-                    case 'authorization_pending': {
-                        return { status: NavigraphTokenStatus.IsPending };
-                    }
-                    case 'expired_token': {
-                        return { status: NavigraphTokenStatus.IsExpired };
-                    }
-                    default: break;
-                    }
+                switch (error?.response?.data?.error) {
+                case 'invalid_client': return { status: NavigraphTokenStatus.InvalidClient };
+                case 'invalid_request': return { status: NavigraphTokenStatus.InvalidRequest };
+                case 'slow_down': return { status: NavigraphTokenStatus.SlowDown };
+                case 'authorization_pending': { return { status: NavigraphTokenStatus.IsPending }; }
+                case 'expired_token': { return { status: NavigraphTokenStatus.IsExpired }; }
+                case 'access_denied': return { status: NavigraphTokenStatus.AccessDenied };
+                default: return { status: NavigraphTokenStatus.Error };
                 }
-                console.error('Error while fetching Navigraph token', error.response?.data);
-                return { status: NavigraphTokenStatus.Error };
             });
     }
 
