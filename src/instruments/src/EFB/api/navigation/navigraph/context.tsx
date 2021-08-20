@@ -11,12 +11,12 @@ const defaultTokenExpiryInterval = 60;
 const defaultAuthCheckInterval = 5;
 
 export type NavigraphApiState = {
-    api?: NavigraphApi;
-    deviceAuth?: NavigraphDeviceAuth | null;
-    authenticateDevice?: () => void;
-    isAuthenticated?: boolean;
-    isAuthenticatingDevice?: boolean;
-    userInfo?: NavigraphUserInfo | null;
+    api: NavigraphApi;
+    deviceAuth: NavigraphDeviceAuth | null;
+    authenticateDevice: () => void;
+    isAuthenticated: boolean;
+    isAuthenticatingDevice: boolean;
+    userInfo: NavigraphUserInfo | null;
 }
 
 const NavigraphApiContext = React.createContext<NavigraphApiState>(undefined!);
